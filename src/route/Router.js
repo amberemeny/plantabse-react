@@ -11,9 +11,9 @@ const Router = props => (
   <BrowserRouter>
     <Switch>
       {/* Main pages */}
-      <Route exact path="https://amberemeny.github.io/plantabase-react/" component={LoginPage} />
-      <Route path="https://amberemeny.github.io/plantabase-react/dashboard" component={DashboardPage} />
-      <Route path="https://amberemeny.github.io/plantabase-react/yourplants" component={YourPlantsPage} />
+      <Route exact path="/" component={LoginPage} />
+      <Route path="/dashboard" component={DashboardPage} />
+      <Route path="/yourplants" component={YourPlantsPage} />
     </Switch>
   </BrowserRouter>
 );
