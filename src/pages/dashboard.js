@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
 import {
   CardContent,
@@ -25,6 +25,8 @@ import { useHistory } from "react-router-dom";
 
 import AddPlantForm from "./addPlantForm";
 import PageBase from "./pageBase";
+import { GlobalContext } from '../utils/globalContext'
+import { AuthContext } from '../utils/Authorization'
 
 const useStyles = makeStyles(theme => ({
   base: {
@@ -115,12 +117,13 @@ const ExpansionPanelSummary = withStyles({
 
 export default function DashboardPage() {
   const classes = useStyles();
-  const [expanded, setExpanded] = React.useState();
+  const [expanded, setExpanded] = useState();
   const history = useHistory();
+
   // For the Add Plant Form.
   const [showPlantForm, setShowPlantForm] = useState(false);
 
-  // Handles the opening and closing of the Add Plant form.
+  // Handles the opening and closing of the Add Plantschedule form.
   const handleClosePlantForm = () => {
     setShowPlantForm(!showPlantForm);
   };
@@ -140,7 +143,7 @@ export default function DashboardPage() {
       <Card className={classes.base}>
         {/* Welcome User Div */}
         <Typography variant="h5" className={classes.userTitle}>
-          Welcome, User.
+          Welcome, {sessionStorage.getItem('username')}.
         </Typography>
       </Card>
       {/* Easy Links */}

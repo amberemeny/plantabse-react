@@ -7,9 +7,8 @@ import {
   Dialog,
 } from "@material-ui/core";
 
-import API, { addPlant } from '../utils/API'
+import API from '../utils/API'
 import { GlobalContext } from '../utils/globalContext'
-import { MessageContext } from '../utils/messageContext'
 
 const useStyles = makeStyles(theme => ({
   base: {
@@ -61,40 +60,51 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function AddPlantFormPage(props) {
-  const { open, onClose } = props
-  const [ name, setName ] = useState()
-  const [ species, setSpecies ] = useState()
-  const [ location, setLocation ] = useState()
-  const [ purchasedate, setPurchasedate ] = useState()
-  const [ purchaseloc, setPurchaseloc ] = useState()
-  const [ price, setPrice ] = useState()
-  const [ growthstage, setGrowthstage ] = useState()
+export default function EditPlantFormPage(props) {
+  const global = useContext(GlobalContext);
+  const { open, onClose, currentPlant } = props
+  const [ name, setName ] = useState(currentPlant.name)
+  const [ species, setSpecies ] = useState(currentPlant.species)
+  const [ location, setLocation ] = useState(currentPlant.location)
+  const [ purchasedate, setPurchasedate ] = useState(currentPlant.purchasedate)
+  const [ purchaseloc, setPurchaseloc ] = useState(currentPlant.purchaseloc)
+  const [ price, setPrice ] = useState(currentPlant.price)
+  const [ growthstage, setGrowthstage ] = useState(currentPlant.growthstage)
   const [ user ] = useState(sessionStorage.getItem('id'))
   const classes = useStyles();
-  const global = useContext(GlobalContext);
-  const message = useContext(MessageContext)
+
+  const getCookie = (cname) => {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) === ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) === 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
 
   const handleSubmit = event => {
     event.preventDefault();
-    addPlant({
-      user: user,
-      name: name,
-      species: species,
-      location: location,
-      purchasedate: purchasedate,
-      purchaseloc: purchaseloc,
-      price: price,
-      growthstage: growthstage,
-    })
-      .then(res => handleSuccess())
-      .catch(err => console.log(err))
-  }
 
-  const handleSuccess = () => {
-    message.setMessage(201, 'Saved Successfully')
-    global.setUserPlants()
-    onClose()
+    API({method: 'put', url: `/plants/${currentPlant.id}/`, headers:{'X-CSRFTOKEN': getCookie('csrftoken')}, 
+      data : {
+        user: user,
+        name: name,
+        species: species,
+        location: location,
+        purchasedate: purchasedate,
+        purchaseloc: purchaseloc,
+        price: price,
+        growthstage: growthstage,
+      }})
+      .then(res => onClose())
+      .catch(err => console.log(err))
   }
 
   const handleChange = event => {
@@ -125,7 +135,7 @@ export default function AddPlantFormPage(props) {
   return (
     <Dialog open={open} onClose={onClose} >
       <div className={classes.base}>
-        <form className={classes.form} noValidate onSubmit={handleSubmit}>
+        <form className={classes.form} noValidate>
           <FormControl>
             <TextField
               id="name"
@@ -138,6 +148,7 @@ export default function AddPlantFormPage(props) {
               }}
               color="primary"
               onChange={handleChange}
+              value={name}
             />
           </FormControl>
           <FormControl>
@@ -152,6 +163,7 @@ export default function AddPlantFormPage(props) {
               }}
               color="primary"
               onChange={handleChange}
+              value={species}
             />
           </FormControl>
           <FormControl className={classes.rowForm}>
@@ -166,6 +178,7 @@ export default function AddPlantFormPage(props) {
               }}
               color="primary"
               onChange={handleChange}
+              value={location}
             />
             <TextField
               id="growthstage"
@@ -178,6 +191,7 @@ export default function AddPlantFormPage(props) {
                 native: true
               }}
               onChange={handleChange}
+              defaultValue={growthstage}
             >
               <option value="null"></option>
               <option value="SPROUT">Sprout</option>
@@ -199,6 +213,7 @@ export default function AddPlantFormPage(props) {
               }}
               color="primary"
               onChange={handleChange}
+              value={purchaseloc}
             />
           </FormControl>
           <FormControl className={classes.rowForm}>
@@ -213,6 +228,7 @@ export default function AddPlantFormPage(props) {
               }}
               color="primary"
               onChange={handleChange}
+              value={purchasedate}
             />
             <TextField
               id="price"
@@ -225,10 +241,11 @@ export default function AddPlantFormPage(props) {
               }}
               color="primary"
               onChange={handleChange}
+              value={price}
             />
           </FormControl>
-          <Button className={classes.button} variant="contained" type='submit'>
-            Add Plant
+          <Button className={classes.button} variant="contained" onClick={handleSubmit}>
+            Save Changes
           </Button>
         </form>
       </div>

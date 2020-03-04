@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
 import {
   CardContent,
@@ -20,6 +20,8 @@ import MuiExpansionPanel from "@material-ui/core/ExpansionPanel";
 import MuiExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import API from "../utils/API";
+import { GlobalContext } from '../utils/globalContext'
 
 const ExpansionPanel = withStyles({
   root: {
@@ -124,12 +126,29 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-export default function AddPlantFormPage(props) {
-  const { open, onClose } = props
+export default function ViewPlantFormPage(props) {
+  const { open, onClose, currentPlant } = props
   const classes = useStyles();
   const [expanded, setExpanded] = useState();
   const [deletePrompt, setDeletePrompt] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const global = useContext(GlobalContext);
+
+  const getCookie = (cname) => {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) === ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) === 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
 
   const handleChange = panel => (event, newExpanded) => {
     setExpanded(newExpanded ? panel : false);
@@ -138,6 +157,22 @@ export default function AddPlantFormPage(props) {
   const handleDeletePrompt = () => {
     setDeletePrompt(!deletePrompt);
   };
+
+  const handleDeleteClose = () => {
+    setDeletePrompt(!deletePrompt);
+  };
+
+  const handleDeleteConfirm = () => {
+    API({method: 'delete', url: `/plants/${currentPlant.id}/`, headers:{'X-CSRFTOKEN': getCookie('csrftoken')} })
+    .then(res => handleDeleteSuccess())
+    .catch(err => console.log(err))
+  };
+
+  const handleDeleteSuccess = () => {
+    handleDeletePrompt()
+    onClose()
+    global.setUserPlants()
+  }
 
   const handleMenu = event => {
     setAnchorEl(event.currentTarget);
@@ -165,6 +200,9 @@ export default function AddPlantFormPage(props) {
         <MenuItem className={classes.menuItem} onClick={handleClose}>
           Add Observation
         </MenuItem>
+        <MenuItem className={classes.menuItem} onClick={handleDeletePrompt}>
+          Delete Plant
+        </MenuItem>
       </Menu>
       <Card className={classes.root}>
         <CardMedia
@@ -176,7 +214,7 @@ export default function AddPlantFormPage(props) {
         <CardContent className={classes.cardContent}>
           <Container className={classes.titleContainer}>
             <Typography variant="h5" className={classes.title}>
-              Alocasia "Polly"
+              {currentPlant.name}
             </Typography>
             <Button
               className={classes.menuButton}
@@ -193,7 +231,7 @@ export default function AddPlantFormPage(props) {
             color="textSecondary"
             style={{ fontStyle: "italic" }}
           >
-            Alocasia x Amazonica "Polly"
+            {currentPlant.species}
           </Typography>
           <Container className={classes.expansionContainer}>
             <ExpansionPanel
@@ -216,7 +254,6 @@ export default function AddPlantFormPage(props) {
                   <div className={classes.buttonContainer}>
                     <Button
                       className={classes.minusButton}
-                      onClick={handleDeletePrompt}
                     >
                       <i class="fas fa-minus fa-lg"></i>
                     </Button>
@@ -252,7 +289,6 @@ export default function AddPlantFormPage(props) {
                   <div className={classes.buttonContainer}>
                     <Button
                       className={classes.minusButton}
-                      onClick={handleDeletePrompt}
                     >
                       <i class="fas fa-minus fa-lg"></i>
                     </Button>
@@ -270,7 +306,6 @@ export default function AddPlantFormPage(props) {
                   <div className={classes.buttonContainer}>
                     <Button
                       className={classes.minusButton}
-                      onClick={handleDeletePrompt}
                     >
                       <i class="fas fa-minus fa-lg"></i>
                     </Button>
@@ -306,7 +341,6 @@ export default function AddPlantFormPage(props) {
                   <div className={classes.buttonContainer}>
                     <Button
                       className={classes.minusButton}
-                      onClick={handleDeletePrompt}
                     >
                       <i class="fas fa-minus fa-lg"></i>
                     </Button>
@@ -324,7 +358,6 @@ export default function AddPlantFormPage(props) {
                   <div className={classes.buttonContainer}>
                     <Button
                       className={classes.minusButton}
-                      onClick={handleDeletePrompt}
                     >
                       <i class="fas fa-minus fa-lg"></i>
                     </Button>
@@ -351,10 +384,10 @@ export default function AddPlantFormPage(props) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDeletePrompt} color="primary">
+          <Button onClick={handleDeleteClose} color="primary">
             No
           </Button>
-          <Button onClick={handleDeletePrompt} color="primary" autoFocus>
+          <Button onClick={handleDeleteConfirm} color="primary" autoFocus>
             Yes
           </Button>
         </DialogActions>

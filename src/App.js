@@ -4,19 +4,22 @@ import {
 } from '@material-ui/core/styles';
 import theme from './styles/index'
 import Router from './route/Router'
-import { UserProvider } from './globalState'
+import { AuthStore } from './utils/Authorization';
+import { GlobalStore } from './utils/globalContext';
+import { MessageStore } from './utils/messageContext'
 
 export default function App() {
-  const user = { name: 'Tania', loggedIn: true }
 
   return (
-
-    <UserProvider value={user}>
+    <AuthStore>
+      <GlobalStore>
+        <MessageStore>
       <MuiThemeProvider theme={theme}>
         <Router />
       </MuiThemeProvider>
-    </UserProvider>
-    
+        </MessageStore>
+      </GlobalStore>
+    </AuthStore>
   );
 }
 

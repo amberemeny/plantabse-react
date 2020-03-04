@@ -8,6 +8,8 @@ import YourPlantsPage from "../pages/yourPlants"
 import DashboardPage from "../pages/dashboard"
 
 const Router = props => (
+  
+
   <BrowserRouter>
     <Switch>
       {/* Main pages */}

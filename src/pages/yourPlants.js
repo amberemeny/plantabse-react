@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import {
   Menu,
@@ -14,6 +14,11 @@ import {
 import PageBase from "./pageBase";
 import AddPlantForm from './addPlantForm'
 import ViewPlantDialog from './viewPlantDialog'
+import EditPlantDialog from './editPlantForm'
+import MessageDialog from '../components/message'
+
+import { GlobalContext } from '../utils/globalContext'
+import { MessageContext } from '../utils/messageContext'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -97,17 +102,36 @@ export default function YourPlantsPage(props) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [showPlantForm, setShowPlantForm] = useState(false)
   const [showDialog, setShowDialog] = useState(null)
+  const [editDialog, setEditDialog] = useState(null)
+  const [currentPlant, setCurrentPlant] = useState(null)
+  const global = useContext(GlobalContext);
+  const message = useContext(MessageContext)
+
+  useEffect(() => {
+    return () => {
+      
+    }
+  }, [])
+
+  const checkPlants = () => {
+    if (!global.userPlants) {
+      console.log('empty plants')
+      global.setUserPlants()
+    } else console.log(global.userPlants)
+  }
+  
+  useEffect(checkPlants, [])
 
   const handleClosePlantForm = () => {
     setShowPlantForm(!showPlantForm)
   }
 
   const handleSearchSubmit = () => {
-    console.log("It did a thing.");
   };
 
-  const handleClick = event => {
+  const handleClick = (plant, event) => {
     setAnchorEl(event.currentTarget);
+    setCurrentPlant(plant)
   };
 
   const handleClose = () => {
@@ -117,6 +141,11 @@ export default function YourPlantsPage(props) {
   const handleShowDialog = () => {
     handleClose()
     setShowDialog(!showDialog)
+  }
+
+  const handleEditDialog = () => {
+    handleClose()
+    setEditDialog(!editDialog)
   }
 
   return (
@@ -137,148 +166,50 @@ export default function YourPlantsPage(props) {
         <MenuItem className={classes.menuItem} onClick={handleClose}>
           Add to Watchlist
         </MenuItem>
+        <MenuItem className={classes.menuItem} onClick={handleEditDialog}>
+          Edit Plant
+        </MenuItem>
       </Menu>
-
+      {message.message && <MessageDialog />}
       <List disablePadding={true}>
-        <Card className={classes.root}>
-          <CardMedia
-            image="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fplantcaretoday.com%2Fwp-content%2Fuploads%2Falocasia-amazonica-809.jpg&f=1&nofb=1"
-            className={classes.media}
-          ></CardMedia>
-          <div className={classes.content}>
-            <Container className={classes.titleContainer}>
-              <Typography className={classes.title}>
-                Alocasia "Polly"
-                <Button
-                  className={classes.button}
-                  aria-controls="simple-menu"
-                  aria-haspopup="true"
-                  test="Alocasia"
-                  onClick={handleClick}
-                >
-                  <i class="fas fa-ellipsis-h fa-lg"></i>
-                </Button>
-              </Typography>
-              <Typography className={classes.subtitle}>
-                Alocasia x amazonica "Polly"
-              </Typography>
-            </Container>
-            <Container className={classes.infoContainer}>
-              <i className={`fas fa-tint fa-lg ${classes.icon}`}></i>
-              <Typography className={classes.contentInfo}>
-                Needs watering in 3 day(s)
-              </Typography>
-            </Container>
-          </div>
-        </Card>
-
-        <Card className={classes.root}>
-          <CardMedia
-            image="https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fstatic1.squarespace.com%2Fstatic%2F58db2d14e6f2e1051b2c5044%2F58db32ee86e6c00da4711a2a%2F58ec3603be6594f50f264834%2F1491876026729%2Fstatic1.squarespace.com.jpg%3Fformat%3D1000w&f=1&nofb=1"
-            className={classes.media}
-          ></CardMedia>
-          <div className={classes.content}>
-            <Container className={classes.titleContainer}>
-              <Typography className={classes.title}>
-                Indoor Monstera
-                <Button
-                  className={classes.button}
-                  aria-controls="simple-menu"
-                  aria-haspopup="true"
-                  onClick={handleClick}
-                >
-                  <i class="fas fa-ellipsis-h fa-lg"></i>
-                </Button>
-              </Typography>
-              <Typography className={classes.subtitle}>
-                Monstera Deliciosa
-              </Typography>
-            </Container>
-            <Container className={classes.infoContainer}>
-              <i className={`fas fa-tint fa-lg ${classes.icon}`}></i>
-              <Typography className={classes.contentInfo}>
-                Needs watering in 1 day(s)
-              </Typography>
-            </Container>
-          </div>
-        </Card>
-
-        <Card className={classes.root}>
-          <CardMedia
-            image="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimg0.etsystatic.com%2F000%2F0%2F5385160%2Fil_570xN.316091980.jpg&f=1&nofb=1"
-            className={classes.media}
-          ></CardMedia>
-          <div className={classes.content}>
-            <Container className={classes.titleContainer}>
-              <Typography className={classes.title}>
-                Oxalis Triangularis
-                <Button
-                  className={classes.button}
-                  aria-controls="simple-menu"
-                  aria-haspopup="true"
-                  onClick={handleClick}
-                >
-                  <i class="fas fa-ellipsis-h fa-lg"></i>
-                </Button>
-              </Typography>
-              <Typography className={classes.subtitle}>
-                Oxalis Trangularis
-              </Typography>
-            </Container>
-            <Container className={classes.infoContainer}>
-              <i
-                className={`fas fa-tint fa-lg ${classes.icon}`}
-                style={{ color: "#cc5200" }}
-              ></i>
-              <Typography
-                className={classes.contentInfo}
-                style={{ color: "#cc5200" }}
-              >
-                Needs watering today
-              </Typography>
-            </Container>
-          </div>
-        </Card>
-
-        <Card className={classes.root}>
-          <CardMedia
-            image="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.ebayimg.com%2Fimages%2Fi%2F232341477288-0-1%2Fs-l1000.jpg&f=1&nofb=1"
-            className={classes.media}
-          ></CardMedia>
-          <div className={classes.content}>
-            <Container className={classes.titleContainer}>
-              <Typography className={classes.title}>
-                Pothos Snow Queen
-                <Button
-                  className={classes.button}
-                  aria-controls="simple-menu"
-                  aria-haspopup="true"
-                  onClick={handleClick}
-                >
-                  <i class="fas fa-ellipsis-h fa-lg"></i>
-                </Button>
-              </Typography>
-              <Typography className={classes.subtitle}>
-                Pothos "Snow Queen"
-              </Typography>
-            </Container>
-            <Container className={classes.infoContainer}>
-              <i
-                className={`fas fa-tint fa-lg ${classes.icon}`}
-                style={{ color: "#cc0000" }}
-              ></i>
-              <Typography
-                className={classes.contentInfo}
-                style={{ color: "#cc0000" }}
-              >
-                Needs watering 2 day(s) ago
-              </Typography>
-            </Container>
-          </div>
-        </Card>
+        {global.userPlants && global.userPlants.map(plant => 
+          <Card className={classes.root}>
+            <CardMedia
+              image="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fplantcaretoday.com%2Fwp-content%2Fuploads%2Falocasia-amazonica-809.jpg&f=1&nofb=1"
+              className={classes.media}
+            ></CardMedia>
+            <div className={classes.content}>
+              <Container className={classes.titleContainer}>
+                <Typography className={classes.title}>
+                  {plant.name}
+                  <Button
+                    className={classes.button}
+                    aria-controls="simple-menu"
+                    aria-haspopup="true"
+                    test={plant.name}
+                    onClick={(e) => handleClick(plant, e)}
+                  >
+                    <i class="fas fa-ellipsis-h fa-lg"></i>
+                  </Button>
+                </Typography>
+                <Typography className={classes.subtitle}>
+                  {plant.species}
+                </Typography>
+              </Container>
+              <Container className={classes.infoContainer}>
+                <i className={`fas fa-tint fa-lg ${classes.icon}`}></i>
+                <Typography className={classes.contentInfo}>
+                  {plant.schedules[1] && <span>{plant.schedules[1].type}</span>}
+                </Typography>
+              </Container>
+            </div>
+          </Card>
+        )}
       </List>
+        
       <AddPlantForm open={showPlantForm} onClose={handleClosePlantForm}/>
-      <ViewPlantDialog open={showDialog} onClose={handleShowDialog}/>
+      {currentPlant && <ViewPlantDialog open={showDialog} onClose={handleShowDialog} currentPlant={currentPlant}/>}
+      {currentPlant && <EditPlantDialog open={editDialog} onClose={handleEditDialog} currentPlant={currentPlant}/>}
     </PageBase>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { RemoveRedEye } from "@material-ui/icons";
 import {
@@ -16,6 +16,9 @@ import {
 } from "@material-ui/core";
 import PageBase from "./pageBase";
 import { useHistory } from "react-router-dom";
+import { GlobalContext } from '../utils/globalContext'
+
+import API from '../utils/API'
 
 const useStyles = makeStyles(theme => ({
   media: {
@@ -59,12 +62,39 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function LoginPage() {
-  const [email, setEmail] = useState();
+  const [username, setUsername] = useState();
   const [password, setPassword] = useState();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [passwordIsMasked, setPasswordIsMasked] = useState(true);
   const history = useHistory();
+  const global = useContext(GlobalContext);
+
+  // Handles login form.
+  async function handleLogin(event) {
+    event.preventDefault()
+    try {
+      setOpen(true)
+      const response = await API({method: 'post', url: '/rest-auth/login/', data: { username, password}})
+      if (response.status === 200) {
+        const result = await API({method: 'get', url: '/users/'})
+        if (result.status === 200) {
+          sessionStorage.setItem('username', result.data.username)
+          sessionStorage.setItem('id', result.data.id)
+          global.setUserPlants()
+        } else {
+          console.log(result.data)
+        }
+        history.push('/dashboard')
+      } else {
+        console.log(response.data)
+      }
+    } catch (error) {
+      if (error & error.response) {
+        console.log(error)
+      }
+    }
+  }
 
   // Masks password for security purposes.
   const togglePasswordMask = () => {
@@ -77,16 +107,25 @@ export default function LoginPage() {
   };
 
   // Toggle the backdrop and redirect after 3s.
-  const handleToggle = () => {
-    setOpen(!open);
-    setTimeout(function() {
-      history.push("/dashboard");
-    }, 2000);
-  };
+  async function handleSave(event) {
+    event.preventDefault()
+    try {
+      const response = await API({method: 'get', url: '/users/'})
+      if (response.status === 200) {
+        console.log(response)
+      } else {
+        console.log(response.data)
+      }
+    } catch (error) {
+      if (error & error.response) {
+        console.log(error)
+      }
+    }
+  }
 
-  // Email field changing.
-  const handleEmailChange = event => {
-    setEmail(event.target.value);
+  // Username field changing.
+  const handleUsernameChange = event => {
+    setUsername(event.target.value);
   };
 
   // Password field changing.
@@ -115,11 +154,11 @@ export default function LoginPage() {
             <form className={classes.form} noValidate>
               <FormControl>
                 <TextField
-                  id="emailField"
-                  label="Email"
-                  type="email"
-                  onChange={handleEmailChange}
-                  value={email}
+                  id="usernamelField"
+                  label="Username"
+                  type="text"
+                  onChange={handleUsernameChange}
+                  value={username}
                   variant="outlined"
                   InputLabelProps={{
                     shrink: true
@@ -155,6 +194,7 @@ export default function LoginPage() {
               {/* Sign Up and Reset Password Links */}
               <div className={classes.linkContainer}>
                 <Link
+                onClick={handleSave}
                   className={classes.loginLinks}
                   TypgraphyClasses={{ variant: "subtitle2" }}
                 >
@@ -169,7 +209,7 @@ export default function LoginPage() {
               </div>
               {/* Sign In Button */}
               <Button
-                onClick={handleToggle}
+                onClick={handleLogin}
                 className={classes.button}
                 variant="contained"
               >

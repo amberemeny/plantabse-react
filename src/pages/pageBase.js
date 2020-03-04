@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import {
   AppBar,
@@ -17,9 +17,12 @@ import {
   CssBaseline
 } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
+import API from '../utils/API'
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import MenuIcon from "@material-ui/icons/Menu";
+
+
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -55,7 +58,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function PageBase(props) {
-  let { showAppBar, barTitle, onSearchSubmit, onAddForm } = props;
+  let { showAppBar, barTitle, onSearchSubmit, onAddForm,} = props;
   const { children } = props;
   const classes = useStyles();
   const [toggle, setToggle] = useState(false);
@@ -73,6 +76,34 @@ export default function PageBase(props) {
   const handleRedirect = (event, url) => {
     history.push(`${url}`);
   };
+
+  const getCookie = (cname) => {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) === ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) === 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
+
+  async function handleLogout(event) {
+    event.preventDefault()
+      const response = await API({method: 'post', url: '/rest-auth/logout/', headers:{'X-CSRFTOKEN': getCookie('csrftoken')	}})
+      if (response.status === 200) {
+        console.log(response.data)
+        sessionStorage.clear()
+        history.push("/")
+      } else {
+        console.log(response.data)
+      }
+  }
 
   return (
     <>
@@ -180,8 +211,8 @@ export default function PageBase(props) {
             <ListItemText primary="Account Settings" />
           </ListItem>
 
-          <ListItem button>
-            <ListItemIcon className={classes.menuIcon}>
+          <ListItem button onClick={handleLogout}> 
+            <ListItemIcon className={classes.menuIcon} >
               <i class="fas fa-sign-out-alt fa-lg"></i>
             </ListItemIcon>
             <ListItemText primary="Log Out" />
