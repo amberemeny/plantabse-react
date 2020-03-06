@@ -43,3 +43,15 @@ export const getPlants = () => call({ method: 'get', url: '/plants/' })
 
 // Create Plant
 export const addPlant = (value) => call({method: 'post', url: '/plants/', data: value})
+
+// Delete Plant
+export const deletePlant = (plant) => call({method: 'delete', url: `/plants/${plant}/`})
+
+// Create Observation
+export const addObservation = (value) => call({method: 'post', url: '/observations/', data: value})
+
+// Index Observations
+export const indexObservations = (plant) => call({method: 'get', url: `plants/${plant}/observations/`})
+
+// Delete Observation
+export const deleteObservations = (plant, observation) => call({method: 'delete', url: `/plants/${plant}/observations/${observation}/`})
