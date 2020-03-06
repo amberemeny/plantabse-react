@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
 import {
   CardContent,
@@ -20,8 +20,9 @@ import MuiExpansionPanel from "@material-ui/core/ExpansionPanel";
 import MuiExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
-import API from "../utils/API";
+import API, { indexObservations } from "../utils/API";
 import { GlobalContext } from '../utils/globalContext'
+import ObservationPrompt from './addObservationForm'
 
 const ExpansionPanel = withStyles({
   root: {
@@ -131,8 +132,25 @@ export default function ViewPlantFormPage(props) {
   const classes = useStyles();
   const [expanded, setExpanded] = useState();
   const [deletePrompt, setDeletePrompt] = useState(false);
+  const [observationPrompt, setObservationPrompt] = useState(false)
+  const [observations, setObservations] = useState([])
   const [anchorEl, setAnchorEl] = useState(null);
   const global = useContext(GlobalContext);
+
+  useEffect(() => {
+    getPlantObservations()
+    setExpanded(false)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPlant])
+
+  const getPlantObservations = () => {
+    indexObservations(currentPlant.id)
+    .then(res => {
+      let results = res.data
+      setObservations(results)
+    })
+    .catch(err => console.log(err))
+  }
 
   const getCookie = (cname) => {
     var name = cname + "=";
@@ -170,6 +188,7 @@ export default function ViewPlantFormPage(props) {
 
   const handleDeleteSuccess = () => {
     handleDeletePrompt()
+    handleClose()
     onClose()
     global.setUserPlants()
   }
@@ -181,6 +200,11 @@ export default function ViewPlantFormPage(props) {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const handleObservationPrompt = () => {
+    setObservationPrompt(!observationPrompt)
+    handleClose()
+  }
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -197,7 +221,7 @@ export default function ViewPlantFormPage(props) {
         <MenuItem className={classes.menuItem} onClick={handleClose}>
           Add to Watchlist
         </MenuItem>
-        <MenuItem className={classes.menuItem} onClick={handleClose}>
+        <MenuItem className={classes.menuItem} onClick={handleObservationPrompt}>
           Add Observation
         </MenuItem>
         <MenuItem className={classes.menuItem} onClick={handleDeletePrompt}>
@@ -337,45 +361,34 @@ export default function ViewPlantFormPage(props) {
                 <Typography variant="h6">Observations</Typography>
               </ExpansionPanelSummary>
               <ExpansionPanelDetails className={classes.panelDetails}>
-                <div className={classes.scheduleContainer}>
-                  <div className={classes.buttonContainer}>
-                    <Button
-                      className={classes.minusButton}
-                    >
-                      <i class="fas fa-minus fa-lg"></i>
-                    </Button>
-                  </div>
-                  <div className={classes.scheduleInfoContainer}>
-                    <Typography className={classes.scheduleTitle}>
-                      New leaf growth
-                    </Typography>
-                    <Typography className={classes.scheduleSubtitle}>
-                      12/1/20 9:34am
-                    </Typography>
-                  </div>
-                </div>
-                <div className={classes.scheduleContainer}>
-                  <div className={classes.buttonContainer}>
-                    <Button
-                      className={classes.minusButton}
-                    >
-                      <i class="fas fa-minus fa-lg"></i>
-                    </Button>
-                  </div>
-                  <div className={classes.scheduleInfoContainer}>
-                    <Typography className={classes.scheduleTitle}>
-                      Leaf impact damage
-                    </Typography>
-                    <Typography className={classes.scheduleSubtitle}>
-                      13/12/19 4:17pm
-                    </Typography>
-                  </div>
-                </div>
+               
+                  { observations && observations.map(observation =>
+                     <div className={classes.scheduleContainer}>
+                      <div className={classes.buttonContainer}>
+                        <Button
+                          className={classes.minusButton}
+                        >
+                          <i class="fas fa-minus fa-lg"></i>
+                        </Button>
+                      </div>
+                      <div className={classes.scheduleInfoContainer}>
+                        <Typography className={classes.scheduleTitle}>
+                          {observation.type}
+                        </Typography>
+                        <Typography className={classes.scheduleSubtitle}>
+                          {observation.date} - {observation.time}
+                        </Typography>
+                      </div>
+                    </div>
+                    )}
+                  
               </ExpansionPanelDetails>
             </ExpansionPanel>
           </Container>
         </CardContent>
       </Card>
+
+    {/* DELETE CONFIRMATION PROMPT */}
       <Dialog open={deletePrompt} onClose={handleDeletePrompt}>
         <DialogTitle id="alert-dialog-title">{"Please Confirm"}</DialogTitle>
         <DialogContent>
@@ -392,6 +405,10 @@ export default function ViewPlantFormPage(props) {
           </Button>
         </DialogActions>
       </Dialog>
+
+    {/* ADD OBSERVATION PROMPT */}
+      <ObservationPrompt handleObservationPrompt={handleObservationPrompt} observationPrompt={observationPrompt} currentPlant={currentPlant} handleClose={handleClose}/>
+
     </Dialog>
   );
 }
