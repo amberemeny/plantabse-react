@@ -87,7 +87,14 @@ export default function AddPlantFormPage(props) {
       price: price,
       growthstage: growthstage,
     })
-      .then(res => handleSuccess())
+      .then(res => {
+        res = res
+        if (res.status === 201) {
+          handleSuccess()
+        } else {
+          console.log(res)
+        }}
+        )
       .catch(err => console.log(err))
   }
 

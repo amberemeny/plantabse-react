@@ -20,9 +20,10 @@ import MuiExpansionPanel from "@material-ui/core/ExpansionPanel";
 import MuiExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
-import API, { indexObservations } from "../utils/API";
+import API, { indexObservations, deleteObservations } from "../utils/API";
 import { GlobalContext } from '../utils/globalContext'
 import ObservationPrompt from './addObservationForm'
+import { SentimentSatisfied } from "@material-ui/icons";
 
 const ExpansionPanel = withStyles({
   root: {
@@ -134,6 +135,8 @@ export default function ViewPlantFormPage(props) {
   const [deletePrompt, setDeletePrompt] = useState(false);
   const [observationPrompt, setObservationPrompt] = useState(false)
   const [observations, setObservations] = useState([])
+  const [observationDelete, setObservationDelete] = useState(false)
+  const [currentObservation, setCurrentObservation] = useState()
   const [anchorEl, setAnchorEl] = useState(null);
   const global = useContext(GlobalContext);
 
@@ -184,7 +187,7 @@ export default function ViewPlantFormPage(props) {
     API({method: 'delete', url: `/plants/${currentPlant.id}/`, headers:{'X-CSRFTOKEN': getCookie('csrftoken')} })
     .then(res => handleDeleteSuccess())
     .catch(err => console.log(err))
-  };
+    }
 
   const handleDeleteSuccess = () => {
     handleDeletePrompt()
@@ -203,8 +206,15 @@ export default function ViewPlantFormPage(props) {
 
   const handleObservationPrompt = () => {
     setObservationPrompt(!observationPrompt)
+    if (observationPrompt === !false) {
+      getPlantObservations()
+    }
     handleClose()
   }
+
+
+  
+
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -364,13 +374,6 @@ export default function ViewPlantFormPage(props) {
                
                   { observations && observations.map(observation =>
                      <div className={classes.scheduleContainer}>
-                      <div className={classes.buttonContainer}>
-                        <Button
-                          className={classes.minusButton}
-                        >
-                          <i class="fas fa-minus fa-lg"></i>
-                        </Button>
-                      </div>
                       <div className={classes.scheduleInfoContainer}>
                         <Typography className={classes.scheduleTitle}>
                           {observation.type}

@@ -33,13 +33,16 @@ async function call(config) {
   try {
     return await Axios(config)
   } catch (error) {
-    if (error.response && error.response.status === 401) {
-    }
+    const response = { status: '401' }
+    return response
   }
 }
 
 // Get Plants
 export const getPlants = () => call({ method: 'get', url: '/plants/' })
+
+// View Plant
+export const viewPlant = (plant) => call({ method: 'get', url: `/plants/${plant}/`})
 
 // Create Plant
 export const addPlant = (value) => call({method: 'post', url: '/plants/', data: value})
@@ -48,7 +51,7 @@ export const addPlant = (value) => call({method: 'post', url: '/plants/', data: 
 export const deletePlant = (plant) => call({method: 'delete', url: `/plants/${plant}/`})
 
 // Create Observation
-export const addObservation = (value) => call({method: 'post', url: '/observations/', data: value})
+export const addObservation = (value) => call({method: 'post', url: `/plants/${value.plant}/observations/`, data: value})
 
 // Index Observations
 export const indexObservations = (plant) => call({method: 'get', url: `plants/${plant}/observations/`})

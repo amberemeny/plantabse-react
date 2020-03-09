@@ -4,8 +4,9 @@ import React from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import LoginPage from "../pages/login"
-import YourPlantsPage from "../pages/yourPlants"
+import PlantsIndexPage from "../pages/plantsIndexPage"
 import DashboardPage from "../pages/dashboard"
+import PlantViewPage from '../pages/plantsViewPage'
 
 const Router = props => (
   
@@ -15,7 +16,8 @@ const Router = props => (
       {/* Main pages */}
       <Route exact path="/" component={LoginPage} />
       <Route path="/dashboard" component={DashboardPage} />
-      <Route path="/yourplants" component={YourPlantsPage} />
+      <Route path="/yourplants/:id" component={PlantViewPage} />
+      <Route path="/yourplants" component={PlantsIndexPage} />
     </Switch>
   </BrowserRouter>
 );
