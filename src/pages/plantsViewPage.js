@@ -15,12 +15,15 @@ import {
   Avatar,
   Link,
   Button,
+  ExpansionPanelDetails
 } from "@material-ui/core";
+import MuiExpansionPanel from '@material-ui/core/ExpansionPanel'
+import MuiExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
 
 import PageBase from "./pageBase";
 import MessageDialog from '../components/message'
 
-import { viewPlant } from '../utils/API'
+import { viewPlant, indexObservations } from '../utils/API'
 
 import { useHistory } from 'react-router-dom'
 import { GlobalContext } from '../utils/globalContext'
@@ -53,7 +56,67 @@ const useStyles = makeStyles(theme => ({
         marginTop: '10px',
         marginLeft: '10px',
     },
+    details: {
+        padding: '5px',
+        paddingTop: '0px',
+        paddingLeft: '15px',
+        display: 'flex',
+        alignItems: 'center',
+    },
+    observationTitle: {
+        fontWeight: 'bold',
+        lineHeight: 1.2,
+        fontSize: '1.2rem'
+    },
+    observationSubtitle: {
+        fontStyle: 'italic',
+        color: theme.palette.grey[700],
+        lineHeight: 1,
+        fontSize: '0.9rem',
+    },
+    box: {
+        padding: '10px',
+    },
   }));
+
+// ExpansionPanel Styling
+const ExpansionPanel = withStyles({
+    root: {
+    //   border: "1px solid rgba(0, 0, 0, .125)",
+      boxShadow: "none",
+      "&:not(:last-child)": {
+        borderBottom: 0
+      },
+      "&:before": {
+        display: "none"
+      },
+      "&$expanded": {
+        margin: "auto"
+      }
+    },
+    expanded: {}
+})(MuiExpansionPanel);
+  
+  // Expansion Panel Summary Styling
+const ExpansionPanelSummary = withStyles({
+    root: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      padding: "0px 5px",
+      minHeight: 0,
+      "&$expanded": {
+        minHeight: 0
+      }
+    },
+    content: {
+        margin: '5px 0',
+      "&$expanded": {
+        margin: "5px 0"
+      }
+    },
+    expanded: {}
+})(MuiExpansionPanelSummary);
 
 const StyledPaper = withStyles({
     root: {
@@ -63,6 +126,7 @@ const StyledPaper = withStyles({
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
+    const classes = useStyles();
   
     return (
       <Typography
@@ -73,7 +137,7 @@ function TabPanel(props) {
         aria-labelledby={`simple-tab-${index}`}
         {...other}
       >
-        {value === index && <Box p={3}>{children}</Box>}
+        {value === index && <Box className={classes.box} p={3}>{children}</Box>}
       </Typography>
     );
 }
@@ -88,16 +152,27 @@ function a11yProps(index) {
 export default function PlantsIndexPage(props) {
     
     const [currentPlant, setCurrentPlant] = useState()
+    const [observations, setObservations] = useState([])
     const classes = useStyles();
     const history = useHistory()
     const global = useContext(GlobalContext);
     const message = useContext(MessageContext)
 
+    const [expanded, setExpanded] = useState()
     const [tab, setTab] = useState(0)
 
     const handleChange = (event, newValue) => {
         setTab(newValue);
+        if (newValue === 2) {
+            indexObservations(currentPlant.id)
+                .then(res => setObservations(res.data))
+        }
       };
+
+        // Handles the ExpansionPanel changes.
+  const handleExpChange = panel => (event, newExpanded) => {
+    setExpanded(newExpanded ? panel : false);
+  };
 
   useEffect(() => {
       handleFindPlant()
@@ -153,14 +228,47 @@ export default function PlantsIndexPage(props) {
             </AppBar>
             <TabPanel value={tab} index={0}>
                 { currentPlant && `${currentPlant.id}` === props.match.params.id &&
-                    <p>SUCCESS</p>
+                    <div>
+                        Species: {currentPlant.species} <br />
+                        Location: {currentPlant.location} <br />
+                        Purchase Date: {currentPlant.purchasedate} <br />
+                        Purchase Location: {currentPlant.purchaseloc} <br />
+                        Purchase Price: ${currentPlant.price}
+                    </div>
+                    
                 }
             </TabPanel>
             <TabPanel value={tab} index={1}>
                 Item Two
             </TabPanel>
             <TabPanel value={tab} index={2}>
-                Item Three
+                { observations.length === 0 && 
+                <Typography>You have no observations!</Typography>
+                }
+
+                { observations && observations.map((observation) => 
+                   
+                   <ExpansionPanel
+                    square
+                    expanded={expanded === `${observation.id}`}
+                    onChange={handleExpChange(`${observation.id}`)}
+                    >
+                    <ExpansionPanelSummary
+                        aria-controls="panel1d-content"
+                        id="panel1d-header"
+                    >
+                    <div className={classes.observationHeader}>
+                        <Typography className={classes.observationTitle} >{observation.type}</Typography>
+                        <Typography className={classes.observationSubtitle} >{observation.date}</Typography>
+                    </div>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails className={classes.details}>
+                        {observation.comment}
+                    </ExpansionPanelDetails>
+                    </ExpansionPanel>
+
+                )}
+
             </TabPanel>
         </StyledPaper>
     </PageBase>
